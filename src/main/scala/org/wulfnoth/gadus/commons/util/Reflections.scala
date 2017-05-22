@@ -1,4 +1,4 @@
-package com.young.commons.util
+package org.wulfnoth.gadus.commons.util
 
 import scala.language.postfixOps
 

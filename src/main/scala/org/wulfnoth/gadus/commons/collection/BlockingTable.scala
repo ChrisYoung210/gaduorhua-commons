@@ -1,4 +1,4 @@
-package com.young.commons.collection
+package org.wulfnoth.gadus.commons.collection
 
 import java.util.concurrent.TimeoutException
 

@@ -4,9 +4,18 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.young.gaduorhua</groupId>
-    <artifactId>gaduorhua-commons</artifactId>
-    <version>1.0</version>
+    <groupId>org.wulfnoth.gadus</groupId>
+    <artifactId>gadus-commons</artifactId>
+    <packaging>jar</packaging>
+    <version>1.0-SNAPSHOT</version>
+
+    <distributionManagement>
+        <snapshotRepository>
+            <id>server-snapshot</id>
+            <name>Local Nexus Repository</name>
+            <url>http://192.168.12.147:65401/nexus/content/repositories/snapshots/</url>
+        </snapshotRepository>
+    </distributionManagement>
 
     <build>
         <plugins>
@@ -30,53 +39,6 @@
                         <phase>generate-sources</phase>
                         <goals>
                             <goal>compile</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <args>
-                        <arg>-P:genjavadoc:out=${project.build.directory}/genjavadoc</arg>
-                    </args>
-                    <compilerPlugins>
-                        <compilerPlugin>
-                            <groupId>com.typesafe.genjavadoc</groupId>
-                            <artifactId>genjavadoc-plugin_2.11.8</artifactId>
-                            <version>0.9</version>
-                        </compilerPlugin>
-                    </compilerPlugins>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>build-helper-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>add-source</goal>
-                        </goals>
-                        <configuration>
-                            <sources>
-                                <source>${project.build.directory}/genjavadoc</source>
-                            </sources>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.10.4</version>
-                <configuration>
-                    <minmemory>64m</minmemory>
-                    <maxmemory>2g</maxmemory>
-                    <outputDirectory>${project.build.directory}</outputDirectory>
-                    <detectLinks>true</detectLinks>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>attach-javadocs</id>
-                        <goals>
-                            <goal>jar</goal>
                         </goals>
                     </execution>
                 </executions>
