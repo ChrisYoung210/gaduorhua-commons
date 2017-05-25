@@ -2,6 +2,8 @@ package org.wulfnoth.gadus.commons.collection
 
 import java.util.concurrent.TimeoutException
 
+import org.slf4j.LoggerFactory
+
 import scala.collection.mutable
 import scala.language.postfixOps
 
@@ -17,60 +19,71 @@ import scala.language.postfixOps
   */
 class BlockingTable[K, V](var timeoutMillis : Long) {
 
-  private class AsyncResult {
-    var element : V = _
-    private var available = false
 
-    @throws(classOf[TimeoutException]) def get : V = {
-      synchronized {
-        if (available) element
-        else {
-          wait(timeoutMillis)
-          if (available) element
-          else throw new TimeoutException
-        }
-      }
-    }
+	private class AsyncResult {
 
-    def set(value : V) {
-      synchronized {
-        element = value
-        available = true
-        notify()
-        this
-      }
-    }
-  }
+		var element : V = _
+		private var available = false
 
-  private val elements = new mutable.HashMap[K, AsyncResult]
+		@throws(classOf[TimeoutException]) def get : V = {
+			synchronized {
+				if (available) element
+				else {
+					wait(timeoutMillis)
+					if (available) element
+					else throw new TimeoutException
+				}
+			}
+		}
 
-  /**
-    * get the value that the key corresponding.
-    * if the K/V tuple already put into the BlockingTable, this method will return the
-    * value immediately. Or else block the thread until the K/V tuple been putted or throw
-    * a java.util.concurrent.TimeoutException
-    *
-    * @param key the key whose associated value is to be returned
-    * @return the value to which the specified key is mapped,
-    *         or null if this map contains no mapping for the key
-    */
-  def get(key : K): V = {
-    val result = elements getOrElseUpdate(key, new AsyncResult)
-    val value = result get;
-    elements.remove(key)
-    value
-  }
+		def set(value : V) {
+			synchronized {
+				element = value
+				available = true
+				notify()
+				this
+			}
+		}
+	}
 
-  /**
-    * Associates the specified value with the specified key in this map.
-    * If the map previously contained a mapping for the key, the old value
-    * is replaced.
-    *
-    * @param key key with which the specified value is to be associated
-    * @param value value to be associated with the specified key
-    */
-  def put(key : K, value : V) {
-    elements getOrElseUpdate(key, new AsyncResult) set value
-  }
+	private val elements = new mutable.HashMap[K, AsyncResult]
+
+	/**
+	  * get the value that the key corresponding.
+	  * if the K/V tuple already put into the BlockingTable, this method will return the
+	  * value immediately. Or else block the thread until the K/V tuple been putted or throw
+	  * a java.util.concurrent.TimeoutException
+	  *
+	  * @param key the key whose associated value is to be returned
+	  * @return the value to which the specified key is mapped,
+	  *         or null if this map contains no mapping for the key
+	  */
+	def get(key : K): V = {
+		BlockingTableStatic.LOG debug s"Try get $key"
+		val result = synchronized {
+			elements getOrElseUpdate(key, new AsyncResult)
+		}
+		val value = result.get
+		elements.remove(key)
+		value
+	}
+
+	/**
+	  * Associates the specified value with the specified key in this map.
+      * If the map previously contained a mapping for the key, the old value
+      * is replaced.
+      *
+      * @param key key with which the specified value is to be associated
+      * @param value value to be associated with the specified key
+      */
+	def put(key : K, value : V) {
+		BlockingTableStatic.LOG debug s"PUT $key"
+		synchronized {
+			elements getOrElseUpdate(key, new AsyncResult) set value
+		}
+	}
 }
 
+private object BlockingTableStatic {
+	val LOG = LoggerFactory getLogger getClass
+}
